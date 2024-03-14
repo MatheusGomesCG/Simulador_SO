@@ -1,10 +1,14 @@
 package so.memory;
 
+import java.util.Hashtable;
+import java.util.List;
+
 import so.Process;
 
 public class MemoryManager {
 
 	private String[] physicMemory;
+	private Hashtable<String, List<FrameMemory>> logicalMemory;
 	private Strategy strategy;
 	private int[][] emptySpaces;
 
@@ -43,6 +47,7 @@ public class MemoryManager {
 				if (actualSize > 0) {
 					emptySpaces[count][0] = actualSize;
 					emptySpaces[count][1] = i;
+					actualSize = 0;
 					count++;
 				}
 			}
@@ -68,67 +73,71 @@ public class MemoryManager {
 
 	}
 
-	private void writeUsingWorstFit(Process p) {
-
+	private int[][] biggerSpacePhysicMemory() {
+		int[][] bigSpace = new int[1][2];
+		spaceInPhysicMemory();
+		for (int i = 0; i < physicMemory.length; i++) {
+			if (emptySpaces[i][0] > bigSpace[0][0]) {
+				bigSpace[0][0] = emptySpaces[i][0];
+				bigSpace[0][1] = emptySpaces[i][1];
+			}
+		}
+		return bigSpace;
 	}
 
-	private void writeUsingBestFit(Process p) {
-		spaceInPhysicMemory();
-		boolean condition = false;
-		int lowerNumber = Integer.MAX_VALUE;
-		int position = 0;
+	private void writeUsingWorstFit(Process p) {
+		int[][] bigSpace = biggerSpacePhysicMemory();
 		int sizeArray = sizePhysicMemoryEmpty();
 		if (p.getSizeInMemory() <= sizeArray) {
-			for (int i = 0; i < physicMemory.length; i++) {
-				if (i == (physicMemory.length - 1)) {
-					if (emptySpaces.length > 0) {
-						for (int j = 0; j < physicMemory.length; j++) {
-							if (emptySpaces[j][0] >= p.getSizeInMemory()) {
-								int start = (emptySpaces[j][1]+1) - emptySpaces[j][0];
-								int count = 0;
-								do {
-									physicMemory[(start + count)] = p.getId();
-									count++;
-								} while (count < p.getSizeInMemory());
-								condition = false;
-								break;
-							}
-						}
-						break;
-					}
-				}
-				if (p.getSizeInMemory() == emptySpaces[i][0]) {
-					int start = emptySpaces[i][1] - emptySpaces[i][0];
-					int count = 0;
-					do {
-						physicMemory[(start + count)] = p.getId();
-						count++;
-					} while (count < p.getSizeInMemory());
-					condition = false;
-					break;
+			if (p.getSizeInMemory() <= bigSpace[0][0]) {
+				int start = 0;
+				if (bigSpace[0][1] < 127) {
+					start = bigSpace[0][1] - bigSpace[0][0];
 				} else {
-					condition = true;
+					start = (bigSpace[0][1] + 1) - bigSpace[0][0];
 				}
-			}
-			if (condition) {
-				for (int i = 0; i < physicMemory.length; i++) {
-					if (emptySpaces[i][0] > p.getSizeInMemory()) {
-						int differentNumber	= Math.abs(emptySpaces[i][0] - p.getSizeInMemory());
-						if (differentNumber < lowerNumber) {
-							lowerNumber = emptySpaces[i][0];
-							position = emptySpaces[i][1];
-						}
-						
-					} 
-				}
-				int start = position - lowerNumber;
 				int count = 0;
 				do {
 					physicMemory[(start + count)] = p.getId();
 					count++;
 				} while (count < p.getSizeInMemory());
-				condition = false;
-			} 
+				printStatusMemory();
+			} else {
+				memoryFull(p);
+			}
+		} else {
+			memoryFull(p);
+		}
+
+	}
+
+	private void writeUsingBestFit(Process p) {
+		spaceInPhysicMemory();
+		int lowerNumber = Integer.MAX_VALUE;
+		int position = 0;
+		int[][] bigSpace = biggerSpacePhysicMemory();
+		if (p.getSizeInMemory() <= bigSpace[0][0]) {
+			for (int i = 0; i < physicMemory.length; i++) {
+				if (emptySpaces[i][0] > p.getSizeInMemory()) {
+					int differentNumber = Math.abs(emptySpaces[i][0] - p.getSizeInMemory());
+					if (differentNumber < lowerNumber) {
+						lowerNumber = emptySpaces[i][0];
+						position = emptySpaces[i][1];
+					}
+
+				}
+			}
+			int start = 0;
+			if (position < 127) {
+				start = position - lowerNumber;
+			} else {
+				start = (position + 1) - lowerNumber;
+			}
+			int count = 0;
+			do {
+				physicMemory[(start + count)] = p.getId();
+				count++;
+			} while (count < p.getSizeInMemory());
 			printStatusMemory();
 		} else {
 			memoryFull(p);
@@ -136,37 +145,23 @@ public class MemoryManager {
 	}
 
 	private void writeUsingFiristFit(Process p) {
-		int actualSize = 0;
-		if (p.getSizeInMemory() <= sizePhysicMemoryEmpty()) {
+		int[][] bigSpace = biggerSpacePhysicMemory();
+		spaceInPhysicMemory();
+		if (p.getSizeInMemory() <= bigSpace[0][0]) {
 			for (int i = 0; i < physicMemory.length; i++) {
-				if (i == (physicMemory.length - 1)) {
-					if (actualSize > 0) {
-						if (p.getSizeInMemory() <= actualSize) {
-							int start = i - actualSize;
-							int count = 0;
-							do {
-								physicMemory[(start + count)] = p.getId();
-								count++;
-							} while (count < p.getSizeInMemory());
-							break;
-						}
+				if (p.getSizeInMemory() <= emptySpaces[i][0]) {
+					int start = 0;
+					if (emptySpaces[i][1] < 127) {
+						start = Math.abs((emptySpaces[i][0]) - emptySpaces[i][1]);
+					} else {
+						start = Math.abs((emptySpaces[i][0] - 1) - emptySpaces[i][1]);
 					}
-				} else if (physicMemory[i] == null) {
-					actualSize++;
-				} else {
-					if (actualSize > 0) {
-						if (p.getSizeInMemory() <= actualSize) {
-							int start = i - actualSize;
-							int count = 0;
-							do {
-								physicMemory[(start + count)] = p.getId();
-								count++;
-							} while (count < p.getSizeInMemory());
-							break;
-						}
-					}
-					actualSize = 0;
-				}
+					int count = 0;
+					do {
+						physicMemory[(start + count)] = p.getId();
+						count++;
+					} while (count < p.getSizeInMemory());
+				} 
 			}
 			printStatusMemory();
 		} else {
@@ -183,7 +178,12 @@ public class MemoryManager {
 	}
 
 	public void deleteProcess(so.Process p) {
-
+		for (int i = 0; i < physicMemory.length; i++) {
+			if (p.getId() == physicMemory[i]) {
+				physicMemory[i] = null;
+			}
+		}
+		printStatusMemory();
 	}
 
 	public void memoryFull(so.Process p) {

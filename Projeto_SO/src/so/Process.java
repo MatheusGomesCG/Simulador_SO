@@ -15,6 +15,11 @@ public class Process {
 	//private Priority priority;
 	private AddressMemory adressInMemory;
 	
+	public Process(int sizeInMemory) {
+		this.id = UUID.randomUUID().toString();
+		this.sizeInMemory = sizeInMemory;
+	}
+	
 	public Process() {
 		Random rand = new Random();
 		this.id = UUID.randomUUID().toString();

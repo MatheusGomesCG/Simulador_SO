@@ -35,18 +35,19 @@ public class OperacionalSystem {
 		OperacionalSystem.scheduler = scheduler;
 	}
 
-	public static Process systemCall(SystemCallType type, Process p) {
-
+	public static Process systemCall(SystemCallType type, Process p, Integer value) {
+		
 		if (type.equals(SystemCallType.WRITE_PROCESS)) {
+			p.setSizeInMemory(value);
 			mm.writeProcess(p);
 		} else if (type.equals(SystemCallType.DELETE_PROCESS)) {
 			mm.deleteProcess(p);
-		} else if (type.equals(SystemCallType.CREATE_PROCESS)) {
+		} else if (type.equals(SystemCallType.CREATE_PROCESS)) {			
 			if (cm == null) {
 				cm = new CpuManager();
 			}
 			if (mm == null) {
-				mm = new MemoryManager(Strategy.BEST_FIT);
+				mm = new MemoryManager(Strategy.FIRIST_FIT);
 			}
 			return new Process();
 
