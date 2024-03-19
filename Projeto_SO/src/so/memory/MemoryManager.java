@@ -1,21 +1,29 @@
 package so.memory;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
 import so.Process;
 
 public class MemoryManager {
-
+	
+	private int pageSize;
 	private String[] physicMemory;
 	private Hashtable<String, List<FrameMemory>> logicalMemory;
 	private Strategy strategy;
 	private int[][] emptySpaces;
 
-	public MemoryManager(Strategy strategy) {
+	public MemoryManager(Strategy strategy, int pageSize) {
 		this.strategy = strategy;
 		this.physicMemory = new String[128];
+		this.logicalMemory = new Hashtable<>();
 		this.emptySpaces = new int[physicMemory.length][2];
+		this.pageSize = pageSize;
+	}
+	
+	public MemoryManager(Strategy strategy) {
+		this(strategy, 2);
 	}
 
 	public int sizePhysicMemoryEmpty() {
@@ -70,9 +78,51 @@ public class MemoryManager {
 	}
 
 	private void writeUsingPaging(Process p) {
-
+		List<FrameMemory> frames = this.getFrames(p);
+		if(frames == null) {
+			System.out.println("Não há espaço suficiente em memória");
+		} else {
+			for (int i = 0; i < frames.size(); i++) {
+				FrameMemory actuallyFrame = frames.get(i);
+				for (int j = actuallyFrame.getPageNumber(); j < actuallyFrame.getOffset(); j++) {
+					this.physicMemory[j] = p.getId();
+				}
+			}
+		}
+		this.logicalMemory.put(p.getId(), frames);
 	}
-
+	
+	private void delete (Process p) {
+		List<FrameMemory> frames = this.logicalMemory.get(p.getId());
+		if(frames == null) {
+			System.out.println("Não há espaço suficiente em memória");
+		} else {
+			for (int i = 0; i < frames.size(); i++) {
+				FrameMemory actuallyFrame = frames.get(i);
+				for (int j = actuallyFrame.getPageNumber(); j < actuallyFrame.getOffset(); j++) {
+					this.physicMemory[j] = null;
+				}
+			}
+		}
+		this.logicalMemory.remove(p.getId());
+	}
+	
+	private List<FrameMemory> getFrames(Process p){
+		List<FrameMemory> frames = new ArrayList<>();
+		int increment = 0;
+		for(int page = 0; page < this.physicMemory.length; page += this.pageSize) {
+			if(this.physicMemory[page] == null) {
+				int offset = page + this.pageSize;
+				frames.add(new FrameMemory(page, offset));
+				increment += this.pageSize;
+				if(increment == p.getSizeInMemory()) {
+					return frames;
+				}
+			}
+		}
+		return null;
+	}
+	
 	private int[][] biggerSpacePhysicMemory() {
 		int[][] bigSpace = new int[1][2];
 		spaceInPhysicMemory();
