@@ -2,13 +2,8 @@ package so.memory;
 
 public class FrameMemory {
 	private int pageNumber;
-	private int offset;
-	
-	public FrameMemory(int pageNumber, int offset) {
-		this.pageNumber = pageNumber;
-		this.offset = offset;
-	}
-
+	private int displacement;
+		
 	public int getPageNumber() {
 		return pageNumber;
 	}
@@ -17,12 +12,21 @@ public class FrameMemory {
 		this.pageNumber = pageNumber;
 	}
 
-	public int getOffset() {
-		return offset;
+	public int getDisplacement() {
+		return displacement;
 	}
 
-	public void setDisplacement(int offset) {
-		this.offset = offset;
+	public void setDisplacement(int displacement) {
+		this.displacement = displacement;
 	}
 
+	public FrameMemory(int pageNumber, int displacement) {
+		this.pageNumber = pageNumber;
+		this.displacement = displacement;
+	}
+
+	public FrameMemory(int pageNumber) {
+		this(pageNumber, 0);
+	}
+	
 }

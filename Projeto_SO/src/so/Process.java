@@ -1,66 +1,83 @@
 package so;
 
-import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
-import so.memory.AddressMemory;
 
 public class Process {
 	
 	private String id;
 	private int sizeInMemory;
-	//private int timeToExecute;
-	//private Priority priority;
-	private AddressMemory adressInMemory;
+	private List<String> processes;
+	private int timeToExecute;
+	private int priority;
+	private int instructions;
+	private int instructionExecuted;
 	
-	public Process(int sizeInMemory) {
-		this.id = UUID.randomUUID().toString();
-		this.sizeInMemory = sizeInMemory;
+	public static int count;
+
+	public Process(int sizeMemory, int timeToExecute, int prioriry) {
+		count++;
+		this.timeToExecute = timeToExecute;
+		this.priority = prioriry;
+		this.id = "P" + count;
+		this.sizeInMemory = sizeMemory;
+		this.processes = this.getProcesses();
+		this.instructions = this.getProcesses().size() * 7;
 	}
-	
-	public Process() {
-		Random rand = new Random();
-		this.id = UUID.randomUUID().toString();
-		List<Integer> givenList = Arrays.asList(5, 10, 25, 50, 100);
-		this.sizeInMemory = givenList.get(rand.nextInt(givenList.size()));
+
+	public List<String> getProcesses() {
+		if (this.processes == null) {
+			this.processes = new LinkedList<>();
+			for (int i = 1; i <= this.sizeInMemory; i++) {
+				String spId = this.getId() + "-" + i;
+				this.processes.add(spId);
+			}
+		}
+		return this.processes;
 	}
-	
+
 	public String getId() {
 		return id;
 	}
+
 	public void setId(String id) {
 		this.id = id;
 	}
+
 	public int getSizeInMemory() {
 		return sizeInMemory;
 	}
+
 	public void setSizeInMemory(int sizeInMemory) {
 		this.sizeInMemory = sizeInMemory;
 	}
-	/*public int getTimeToExecute() {
+
+	public int getTimeToExecute() {
 		return timeToExecute;
 	}
+
 	public void setTimeToExecute(int timeToExecute) {
 		this.timeToExecute = timeToExecute;
 	}
-	
-	public Priority getPriority() {
+
+	public int getPriorityType() {
 		return priority;
 	}
-	public void setPriority(Priority priority) {
+
+	public void setPriorityType(int priority) {
 		this.priority = priority;
 	}
-	*/
-
-	public AddressMemory getAdressInMemory() {
-		return adressInMemory;
-	}
-
-	public void setAdressInMemory(AddressMemory adressInMemory) {
-		this.adressInMemory = adressInMemory;
+	
+	public void updateInstructionExecuted() {
+		this.instructionExecuted += 7;
 	}
 	
-	
+	public void checkInstructions() {
+		if (this.instructions == this.instructionExecuted) {
+			System.out.println("\n**********");
+			System.out.println(this.getId() + "- SUCESS!");
+			System.out.println("**********\n");
+		}
+	}
+
 }

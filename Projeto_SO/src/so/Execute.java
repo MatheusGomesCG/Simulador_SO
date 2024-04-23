@@ -1,26 +1,21 @@
 package so;
 
 public class Execute {
-
 	public static void main(String[] args) {
-
-		Process p1 = OperacionalSystem.systemCall(SystemCallType.CREATE_PROCESS, null, null);
-		OperacionalSystem.systemCall(SystemCallType.WRITE_PROCESS, p1, 20);
-
-		Process p2 = OperacionalSystem.systemCall(SystemCallType.CREATE_PROCESS, null, null);
-		OperacionalSystem.systemCall(SystemCallType.WRITE_PROCESS, p2, 38);
 		
-		Process p3 = OperacionalSystem.systemCall(SystemCallType.CREATE_PROCESS, null, null);
-		OperacionalSystem.systemCall(SystemCallType.WRITE_PROCESS, p3, 38);
+		System.out.println("PROCESS P1");
+		Process p1 = SystemOperation.SystemCall(SystemCallType.CREATE_PROCESS, 130, 10, -1);
+		SystemOperation.systemCall(SystemCallType.WRITE_PROCESS, p1);
 		
-		Process p4 = OperacionalSystem.systemCall(SystemCallType.CREATE_PROCESS, null, null);
-		OperacionalSystem.systemCall(SystemCallType.WRITE_PROCESS, p4, 20);
+		System.out.println("\nPROCESS P2");
 		
-		OperacionalSystem.systemCall(SystemCallType.DELETE_PROCESS, p2, null);
+		Process p2 = SystemOperation.SystemCall(SystemCallType.CREATE_PROCESS, 90, 5, 0);
+		SystemOperation.systemCall(SystemCallType.WRITE_PROCESS, p2);
 		
-		Process p5 = OperacionalSystem.systemCall(SystemCallType.CREATE_PROCESS, null, null);
-		OperacionalSystem.systemCall(SystemCallType.WRITE_PROCESS, p5, 40);
+		System.out.println("\nPROCESS P3");
+		
+		Process p3 = SystemOperation.SystemCall(SystemCallType.CREATE_PROCESS, 30, 15, 100);
+		SystemOperation.systemCall(SystemCallType.WRITE_PROCESS, p3);
 		
 	}
-
 }
